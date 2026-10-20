@@ -43,6 +43,11 @@ footer{padding:45px 0 28px;display:flex;justify-content:space-between;gap:15px;a
 @media(max-width:760px){.hero{grid-template-columns:1fr;padding-top:30px;gap:0}.hero-copy{position:relative;z-index:1}.art{min-height:270px;margin-top:-8px}.character{width:240px;height:285px}.art-ring{width:255px}.art-label{right:8%}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.section-head p{display:none}}
 @media(max-width:440px){.wrap{width:min(100% - 24px,1080px)}header{padding:18px 0}.status{font-size:.6rem}.hero{padding:28px 0 32px}h1{font-size:clamp(3.3rem,18vw,5rem)}.intro{font-size:.92rem}.cards{grid-template-columns:1fr;gap:10px}.card{min-height:76px;padding:14px}.art{min-height:250px}footer{padding-top:32px;flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
+
+.music-player{position:fixed;right:18px;bottom:18px;z-index:10;width:min(300px,calc(100vw - 28px));padding:13px 14px;border:1px solid #c6dfef;border-radius:18px;background:rgba(245,251,255,.9);box-shadow:0 12px 38px rgba(44,91,130,.16);backdrop-filter:blur(18px);color:#365a78}
+.music-top{display:flex;align-items:center;gap:10px}.music-disc{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#fff,#c9e7fa);border:1px solid #b6d8ee;color:#477ca4}.music-meta{min-width:0;flex:1}.music-title{font-weight:800;font-size:.8rem}.music-sub{font-size:.68rem;color:#7794aa;margin-top:2px}.music-toggle{border:0;border-radius:11px;width:38px;height:38px;background:#d8edfb;color:#2e638b;font-size:1rem;cursor:pointer}.music-volume{display:flex;align-items:center;gap:9px;margin-top:11px;font-size:.7rem;color:#6c8aa3}.music-volume input{width:100%;accent-color:#609dca}.music-toggle:focus-visible,.music-volume input:focus-visible{outline:2px solid #4f91c3;outline-offset:3px}
+@media(max-width:440px){.music-player{right:12px;bottom:12px;padding:10px 12px;width:245px}.music-disc{width:32px;height:32px;flex-basis:32px}}
+
 </style>
 </head>
 <body>
@@ -89,6 +94,17 @@ footer{padding:45px 0 28px;display:flex;justify-content:space-between;gap:15px;a
 </main>
 <footer><span class="footer-mark">FRIZIKIK / REI INTERFACE</span><span>Personal page · Made with a little blue</span></footer>
 </div>
+
+<aside class="music-player" aria-label="Фоновая музыка">
+  <div class="music-top">
+    <div class="music-disc" aria-hidden="true">♫</div>
+    <div class="music-meta"><div class="music-title">BLUE AMBIENT</div><div class="music-sub" id="music-status">Тихая атмосфера · Original</div></div>
+    <button class="music-toggle" id="music-toggle" type="button" aria-label="Включить музыку" title="Включить музыку">▶</button>
+  </div>
+  <label class="music-volume" for="music-volume"><span>Громкость</span><input id="music-volume" type="range" min="0" max="1" step="0.01" value="0.22" aria-label="Громкость музыки"><span id="volume-value">22%</span></label>
+  <audio id="background-music" src="ambient-blue.mp3" loop preload="none"></audio>
+</aside>
+
 <div class="toast" id="toast" role="status" aria-live="polite">Скопировано</div>
 <script>
 const toast = document.getElementById('toast');
@@ -104,6 +120,22 @@ async function copyText(value){
   toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2200);
 }
 document.querySelectorAll('[data-copy]').forEach(el=>el.addEventListener('click',()=>copyText(el.dataset.copy)));
+
+const music=document.getElementById('background-music');
+const musicToggle=document.getElementById('music-toggle');
+const musicStatus=document.getElementById('music-status');
+const volumeControl=document.getElementById('music-volume');
+const volumeValue=document.getElementById('volume-value');
+music.volume=Number(volumeControl.value);
+musicToggle.addEventListener('click',async()=>{
+  if(music.paused){
+    try{await music.play();musicToggle.textContent='Ⅱ';musicToggle.setAttribute('aria-label','Поставить музыку на паузу');musicToggle.title='Пауза';musicStatus.textContent='Сейчас играет · Original ambient';}
+    catch(e){musicStatus.textContent='Не удалось запустить — нажми ещё раз';}
+  }else{music.pause();musicToggle.textContent='▶';musicToggle.setAttribute('aria-label','Включить музыку');musicToggle.title='Включить музыку';musicStatus.textContent='На паузе · Original ambient';}
+});
+volumeControl.addEventListener('input',()=>{music.volume=Number(volumeControl.value);volumeValue.textContent=Math.round(music.volume*100)+'%';});
+music.addEventListener('ended',()=>{music.currentTime=0;music.play().catch(()=>{});});
+
 </script>
 </body>
 </html>
